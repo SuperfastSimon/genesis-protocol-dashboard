@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genesis Protocol Dashboard | Saikou.tech</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00f5ff, #ff00aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .dashboard-title {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .dashboard-title h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #00f5ff, #ff00aa, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .dashboard-title p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 245, 255, 0.3);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00f5ff;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .agent-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .agent-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0, 245, 255, 0.2);
+        }
+        
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .agent-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .status-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status-active { background: #00ff0040; color: #00ff00; border: 1px solid #00ff00; }
+        .status-idle { background: #ffaa0040; color: #ffaa00; border: 1px solid #ffaa00; }
+        .status-error { background: #ff004040; color: #ff0040; border: 1px solid #ff0040; }
+        
+        .agent-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+        
+        .agent-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.4rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #00f5ff, #0099ff);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 245, 255, 0.4);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer p {
+            opacity: 0.6;
+            font-size: 0.9rem;
+        }
+        
+        .last-updated {
+            font-size: 0.8rem;
+            opacity: 0.5;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">🧬 Genesis Protocol</div>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>System Operational</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div class="dashboard-title">
+            <h1>Genesis Protocol Dashboard</h1>
+            <p>Advanced AI Agent Orchestration & Evolution System</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">24</div>
+                <div class="stat-label">Active Agents</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">18</div>
+                <div class="stat-label">Running</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Idle</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">1</div>
+                <div class="stat-label">Needs Attention</div>
+            </div>
+        </div>
+        
+        <div class="agents-grid" id="agents-grid">
+            <!-- Agents will be loaded via JavaScript -->
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Saikou.tech | Genesis Protocol Dashboard</p>
+            <div class="last-updated">Last updated: <span id="last-updated"></span></div>
+        </div>
+    </footer>
+    
+    <script>
+        // Genesis Protocol Agents Data
+        const genesisAgents = [
+            {
+                name: "Genesis Safety Gate",
+                description: "Advanced safety validation system ensuring all Genesis operations pass security and ethical checks",
+                status: "active",
+                id: "d0713492-6600-4459-855a-5a10a08303ae"
+            },
+            {
+                name: "Genesis Master Builder v13",
+                description: "Latest version of the autonomous system builder with enhanced AI capabilities",
+                status: "active", 
+                id: "f85e234a-9b7c-4d1e-8f2a-3c5d7e9b1a2f"
+            },
+            {
+                name: "Genesis Boss v8",
+                description: "Executive control agent managing high-level Genesis Protocol decisions and resource allocation",
+                status: "active",
+                id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            },
+            {
+                name: "Genesis Architect v12",
+                description: "System architecture planner designing optimal configurations for complex AI workflows",
+                status: "active",
+                id: "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+            },
+            {
+                name: "Genesis Worker Supervisor",
+                description: "Monitors and coordinates Genesis worker agents ensuring optimal performance across all tasks",
+                status: "active",
+                id: "c3d4e5f6-a7b8-9012-cdef-345678901234"
+            },
+            {
+                name: "Genesis Report Generator",
+                description: "Automated report creation system generating comprehensive Genesis Protocol analytics",
+                status: "idle",
+                id: "d4e5f6a7-b8c9-0123-def4-56789012345"
+            },
+            {
+                name: "Genesis Security Scanner",
+                description: "Continuous security monitoring and threat detection for all Genesis infrastructure",
+                status: "active",
+                id: "e5f6a7b8-c9d0-1234-ef45-678901234567"
+            },
+            {
+                name: "Genesis Performance Monitor",
+                description: "Real-time performance tracking and optimization recommendations for Genesis agents",
+                status: "active",
+                id: "f6a7b8c9-d0e1-2345-f456-789012345678"
+            },
+            {
+                name: "Genesis Data Synthesizer",
+                description: "Advanced data processing and synthesis engine for Genesis Protocol insights",
+                status: "active",
+                id: "a7b8c9d0-e1f2-3456-a567-890123456789"
+            },
+            {
+                name: "Genesis Evolution Engine",
+                description: "Self-improving system that evolves Genesis Protocol capabilities through machine learning",
+                status: "active",
+                id: "b8c9d0e1-f2a3-4567-b678-901234567890"
+            },
+            {
+                name: "Genesis Deployment Manager v11",
+                description: "Automated deployment orchestrator for Genesis agents across multiple platforms",
+                status: "active",
+                id: "c9d0e1f2-a3b4-5678-c789-012345678901"
+            },
+            {
+                name: "Genesis Quality Assurance",
+                description: "Comprehensive testing and validation system ensuring Genesis Protocol reliability",
+                status: "idle",
+                id: "d0e1f2a3-b4c5-6789-d890-123456789012"
+            },
+            {
+                name: "Genesis Communication Hub",
+                description: "Central communication coordinator managing inter-agent messaging and coordination",
+                status: "active",
+                id: "e1f2a3b4-c5d6-789a-e901-234567890123"
+            },
+            {
+                name: "Genesis Resource Allocator",
+                description: "Dynamic resource management system optimizing computing resources across Genesis agents",
+                status: "active",
+                id: "f2a3b4c5-d6e7-89ab-f012-345678901234"
+            },
+            {
+                name: "Genesis Backup Coordinator",
+                description: "Automated backup and recovery system ensuring Genesis Protocol data integrity",
+                status: "active",
+                id: "a3b4c5d6-e7f8-9abc-0123-456789012345"
+            },
+            {
+                name: "Genesis Analytics Engine",
+                description: "Advanced analytics processor generating insights from Genesis Protocol operations",
+                status: "active",
+                id: "b4c5d6e7-f8a9-bcde-1234-567890123456"
+            },
+            {
+                name: "Genesis Integration Manager",
+                description: "Manages external system integrations and API connections for Genesis Protocol",
+                status: "idle",
+                id: "c5d6e7f8-a9b0-cdef-2345-678901234567"
+            },
+            {
+                name: "Genesis Error Handler",
+                description: "Intelligent error detection, logging, and resolution system for Genesis operations",
+                status: "active",
+                id: "d6e7f8a9-b0c1-def0-3456-789012345678"
+            },
+            {
+                name: "Genesis Load Balancer",
+                description: "Dynamic load distribution system ensuring optimal performance across Genesis infrastructure",
+                status: "active",
+                id: "e7f8a9b0-c1d2-ef01-4567-890123456789"
+            },
+            {
+                name: "Genesis Configuration Manager",
+                description: "Centralized configuration management system for all Genesis Protocol components",
+                status: "active",
+                id: "f8a9b0c1-d2e3-f012-5678-901234567890"
+            },
+            {
+                name: "Genesis Compliance Monitor",
+                description: "Ensures all Genesis operations comply with regulatory requirements and best practices",
+                status: "error",
+                id: "a9b0c1d2-e3f4-0123-6789-012345678901"
+            },
+            {
+                name: "Genesis Scheduler Pro",
+                description: "Advanced task scheduling and workflow orchestration for complex Genesis operations",
+                status: "active",
+                id: "b0c1d2e3-f4a5-1234-7890-123456789012"
+            },
+            {
+                name: "Genesis Health Monitor",
+                description: "Continuous health monitoring and diagnostic system for all Genesis Protocol components",
+                status: "active",
+                id: "c1d2e3f4-a5b6-2345-8901-234567890123"
+            },
+            {
+                name: "Genesis Dashboard Builder",
+                description: "Dynamic dashboard creation system providing real-time Genesis Protocol visualization",
+                status: "idle",
+                id: "d2e3f4a5-b6c7-3456-9012-345678901234"
+            }
+        ];
+        
+        // Render agents
+        function renderAgents() {
+            const agentsGrid = document.getElementById('agents-grid');
+            agentsGrid.innerHTML = '';
+            
+            genesisAgents.forEach(agent => {
+                const agentCard = document.createElement('div');
+                agentCard.className = 'agent-card';
+                
+                const statusClass = `status-${agent.status}`;
+                const statusText = agent.status.charAt(0).toUpperCase() + agent.status.slice(1);
+                
+                agentCard.innerHTML = `
+                    <div class="agent-header">
+                        <div class="agent-name">${agent.name}</div>
+                        <div class="agent-status">
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                    <div class="agent-description">${agent.description}</div>
+                    <div class="agent-actions">
+                        <a href="https://platform.agpt.co/library/agents/${agent.id}" class="btn btn-primary" target="_blank">View Agent</a>
+                        <button class="btn btn-secondary" onclick="runAgent('${agent.id}')">Execute</button>
+                    </div>
+                `;
+                
+                agentsGrid.appendChild(agentCard);
+            });
+        }
+        
+        // Mock function for running agents
+        function runAgent(agentId) {
+            alert(`Executing agent: ${agentId}\n\nThis would normally trigger the agent execution via AutoGPT API.`);
+        }
+        
+        // Update last updated time
+        function updateLastUpdated() {
+            const now = new Date();
+            const formatted = now.toLocaleString('nl-NL', {
+                year: 'numeric',
+                month: '2-digit', 
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('last-updated').textContent = formatted;
+        }
+        
+        // Update stats based on agent statuses
+        function updateStats() {
+            const activeCount = genesisAgents.filter(a => a.status === 'active').length;
+            const idleCount = genesisAgents.filter(a => a.status === 'idle').length;
+            const errorCount = genesisAgents.filter(a => a.status === 'error').length;
+            
+            const statCards = document.querySelectorAll('.stat-card .stat-number');
+            statCards[1].textContent = activeCount;
+            statCards[2].textContent = idleCount; 
+            statCards[3].textContent = errorCount;
+        }
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            renderAgents();
+            updateStats();
+            updateLastUpdated();
+            
+            // Update every 30 seconds
+            setInterval(() => {
+                updateLastUpdated();
+                // In a real implementation, this would fetch fresh data
+            }, 30000);
+        });
+    </script>
+</body>
+</html>
