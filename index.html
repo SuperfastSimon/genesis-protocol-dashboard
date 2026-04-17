@@ -1,1 +1,923 @@
-/home/user/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genesis Protocol Command Center | Saikou.tech</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --surface3: #22223a;
+    --border: #2a2a42;
+    --accent: #6c63ff;
+    --accent2: #00d4ff;
+    --accent3: #ff6b6b;
+    --success: #00e676;
+    --warning: #ffab00;
+    --error: #ff5252;
+    --text: #e8e8f0;
+    --text2: #9090b0;
+    --text3: #5050708;
+    --glow: 0 0 20px rgba(108,99,255,0.3);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* HEADER */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .logo-text { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
+  .logo-sub { font-size: 11px; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .api-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--error); }
+  .dot.connected { background: var(--success); box-shadow: 0 0 8px var(--success); }
+  .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #7c74ff; box-shadow: var(--glow); }
+  .btn-secondary { background: var(--surface3); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: var(--error); color: white; }
+  .btn-danger:hover { background: #ff6b6b; }
+  .btn-warning { background: var(--warning); color: #000; }
+  .btn-success { background: var(--success); color: #000; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 2px; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; }
+  .tab { padding: 14px 20px; font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; letter-spacing: 0.3px; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* MAIN */
+  main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== DASHBOARD VIEW ===== */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .stat-value { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .stat-label { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; }
+  .stat-card.accent { border-color: rgba(108,99,255,0.4); background: rgba(108,99,255,0.05); }
+  .stat-card.success { border-color: rgba(0,230,118,0.4); background: rgba(0,230,118,0.05); }
+  .stat-card.warning { border-color: rgba(255,171,0,0.4); background: rgba(255,171,0,0.05); }
+  .stat-card.error { border-color: rgba(255,82,82,0.4); background: rgba(255,82,82,0.05); }
+
+  /* PIPELINE VISUALIZER */
+  .pipeline-viz { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  .viz-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+  .pipeline-nodes { display: flex; align-items: center; gap: 0; overflow-x: auto; padding-bottom: 8px; }
+  .pipeline-node { display: flex; flex-direction: column; align-items: center; min-width: 120px; }
+  .node-box { width: 100px; padding: 12px 8px; border-radius: 10px; background: var(--surface2); border: 2px solid var(--border); text-align: center; transition: all 0.3s; position: relative; cursor: pointer; }
+  .node-box:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .node-box.running { border-color: var(--accent2); background: rgba(0,212,255,0.08); animation: pulse 1.5s ease-in-out infinite; }
+  .node-box.done { border-color: var(--success); background: rgba(0,230,118,0.08); }
+  .node-box.error { border-color: var(--error); background: rgba(255,82,82,0.08); }
+  .node-box.paused { border-color: var(--warning); background: rgba(255,171,0,0.08); }
+  .node-box.inactive { opacity: 0.4; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.4); } 50% { box-shadow: 0 0 0 8px rgba(0,212,255,0); } }
+  .node-icon { font-size: 20px; margin-bottom: 6px; }
+  .node-name { font-size: 11px; font-weight: 600; color: var(--text); }
+  .node-status { font-size: 10px; color: var(--text2); margin-top: 3px; }
+  .node-cost { font-size: 10px; color: var(--accent2); margin-top: 2px; }
+  .node-connector { flex: 1; display: flex; align-items: center; min-width: 30px; }
+  .connector-line { flex: 1; height: 2px; background: var(--border); position: relative; }
+  .connector-line.active { background: linear-gradient(90deg, var(--success), var(--accent2)); }
+  .connector-line.flowing::after { content: ''; position: absolute; width: 8px; height: 8px; background: var(--accent2); border-radius: 50%; top: -3px; animation: flow 1.5s linear infinite; }
+  @keyframes flow { from { left: 0; } to { left: 100%; } }
+  .connector-arrow { color: var(--border); font-size: 16px; }
+  .connector-arrow.active { color: var(--accent2); }
+
+  /* CONTROLS */
+  .controls { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .controls-left { display: flex; gap: 10px; flex: 1; }
+  .controls-right { display: flex; align-items: center; gap: 16px; }
+  .cost-display { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; }
+  .cost-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; }
+  .cost-value { font-size: 18px; font-weight: 700; color: var(--accent2); }
+  .budget-bar { flex: 1; height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; min-width: 100px; }
+  .budget-fill { height: 100%; background: linear-gradient(90deg, var(--success), var(--warning)); border-radius: 2px; transition: width 0.5s; }
+
+  /* AGENT STATUS TABLE */
+  .agent-table { width: 100%; border-collapse: collapse; }
+  .agent-table th { text-align: left; padding: 10px 16px; font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); }
+  .agent-table td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid rgba(42,42,66,0.5); }
+  .agent-table tr:last-child td { border-bottom: none; }
+  .agent-table tr:hover td { background: rgba(108,99,255,0.04); }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-idle { background: rgba(144,144,176,0.15); color: var(--text2); }
+  .badge-running { background: rgba(0,212,255,0.15); color: var(--accent2); }
+  .badge-done { background: rgba(0,230,118,0.15); color: var(--success); }
+  .badge-error { background: rgba(255,82,82,0.15); color: var(--error); }
+  .badge-paused { background: rgba(255,171,0,0.15); color: var(--warning); }
+  .agent-icon { font-size: 18px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <div class="logo-text">Genesis Protocol</div>
+      <div class="logo-sub">Saikou.tech Command Center</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="api-status">
+      <div class="dot" id="apiDot"></div>
+      <span id="apiStatusText">Not connected</span>
+    </div>
+    <button class="btn btn-secondary" onclick="openSettings()">⚙ Settings</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('dashboard')">⚡ Dashboard</div>
+  <div class="tab" onclick="switchTab('pipeline')">🔧 Pipeline Builder</div>
+  <div class="tab" onclick="switchTab('history')">📋 History</div>
+  <div class="tab" onclick="switchTab('settings')">🔑 Settings & Credentials</div>
+</div>
+
+<main>
+
+  <!-- ===== DASHBOARD VIEW ===== -->
+  <div class="view active" id="view-dashboard">
+    <div class="stats-row">
+      <div class="stat-card accent">
+        <div class="stat-value" id="stat-agents">7</div>
+        <div class="stat-label">Active Agents</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-value" id="stat-runs">0</div>
+        <div class="stat-label">Total Runs</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-value" id="stat-cost">€0.00</div>
+        <div class="stat-label">Total Spent</div>
+      </div>
+      <div class="stat-card error">
+        <div class="stat-value" id="stat-status">Idle</div>
+        <div class="stat-label">Pipeline Status</div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <div class="controls-left">
+        <button class="btn btn-success" id="btn-start" onclick="startPipeline()">▶ Start Pipeline</button>
+        <button class="btn btn-warning" id="btn-pause" onclick="pausePipeline()" disabled>⏸ Pause</button>
+        <button class="btn btn-danger" id="btn-stop" onclick="stopPipeline()" disabled>⏹ Stop</button>
+        <button class="btn btn-secondary" onclick="retryFailed()" id="btn-retry" style="display:none">↺ Retry Failed</button>
+      </div>
+      <div class="controls-right">
+        <div class="cost-display">
+          <div>
+            <div class="cost-label">Run Cost</div>
+            <div class="cost-value" id="run-cost">€0.00</div>
+          </div>
+          <div style="min-width:100px;">
+            <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">Budget Cap: <span id="budget-cap-label">€5.00</span></div>
+            <div class="budget-bar"><div class="budget-fill" id="budget-fill" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">ETA</div>
+          <div style="font-size:14px;font-weight:600;" id="eta-display">--:--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIPELINE VISUALIZER -->
+    <div class="pipeline-viz">
+      <div class="viz-title">
+        <span>Pipeline Flow</span>
+        <span style="font-size:12px;color:var(--text2);font-weight:400;" id="active-pipeline-name">No pipeline selected</span>
+      </div>
+      <div class="pipeline-nodes" id="pipelineNodes">
+        <div style="color:var(--text2);font-size:13px;padding:20px;">Select a pipeline in the Pipeline Builder tab to visualize it here.</div>
+      </div>
+    </div>
+
+    <!-- AGENT STATUS -->
+    <div class="card">
+      <div class="card-title">Agent Status</div>
+      <table class="agent-table">
+        <thead>
+          <tr>
+            <th>Agent</th>
+            <th>Status</th>
+            <th>Last Run</th>
+            <th>Duration</th>
+            <th>Cost</th>
+            <th>Output</th>
+          </tr>
+        </thead>
+        <tbody id="agentTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== PIPELINE BUILDER VIEW ===== -->
+  <div class="view" id="view-pipeline">
+    <div style="display:flex;gap:16px;margin-bottom:20px;align-items:center;flex-wrap:wrap;">
+      <div style="flex:1;">
+        <div style="font-size:20px;font-weight:700;margin-bottom:4px;">Pipeline Builder</div>
+        <div style="font-size:13px;color:var(--text2);">Select agents and order them. Then run the Setup Wizard to configure each one.</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <input type="text" id="pipeline-name-input" placeholder="Pipeline name..." style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text);font-size:13px;outline:none;width:200px;">
+        <button class="btn btn-primary" onclick="savePipeline()">💾 Save Pipeline</button>
+        <button class="btn btn-secondary" onclick="openWizard()">⚙ Setup Wizard</button>
+      </div>
+    </div>
+
+    <!-- Saved Pipelines -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Saved Pipelines</div>
+      <div id="saved-pipelines" style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="color:var(--text2);font-size:13px;">No saved pipelines yet.</div>
+      </div>
+    </div>
+
+    <!-- Agent Selection -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:20px;">Available Agents — Select & Order</div>
+      <div id="agent-selector" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- ===== HISTORY VIEW ===== -->
+  <div class="view" id="view-history">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div>
+        <div style="font-size:20px;font-weight:700;margin-bottom:4px;">Run History</div>
+        <div style="font-size:13px;color:var(--text2);">All past pipeline executions</div>
+      </div>
+      <button class="btn btn-secondary" onclick="clearHistory()">🗑 Clear History</button>
+    </div>
+    <div id="history-list" class="card">
+      <div style="color:var(--text2);font-size:13px;text-align:center;padding:40px;">No runs yet. Start a pipeline to see history here.</div>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS VIEW ===== -->
+  <div class="view" id="view-settings">
+    <div style="font-size:20px;font-weight:700;margin-bottom:4px;">Settings & Credentials</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:24px;">All credentials are stored locally in your browser only. Never sent anywhere except the AutoGPT API.</div>
+
+    <div class="grid-2" style="gap:20px;">
+      <div class="card">
+        <div class="card-title">AutoGPT API Connection</div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">API Key</label>
+          <div style="display:flex;gap:8px;">
+            <input type="password" id="api-key-input" placeholder="Enter your AutoGPT External API key..." style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;">
+            <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn btn-secondary" onclick="testConnection()" style="font-size:12px;">Test Connection</button>
+          <span id="connection-result" style="font-size:12px;color:var(--text2);"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Budget Settings</div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">Max Budget Cap per Run (€)</label>
+          <input type="number" id="budget-cap-input" value="5" min="0.5" max="100" step="0.5" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;width:100%;">
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">Cost per agent run estimate (€)</label>
+          <input type="number" id="cost-estimate-input" value="0.15" min="0.01" max="10" step="0.01" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;width:100%;">
+        </div>
+        <button class="btn btn-primary" onclick="saveBudgetSettings()">Save Budget Settings</button>
+      </div>
+
+      <div class="card" style="grid-column:1/-1;">
+        <div class="card-title">Agent Library IDs</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:16px;">These IDs are used to reference your agents via the AutoGPT API. Edit if you update an agent.</div>
+        <div id="agent-ids-editor" style="display:flex;flex-direction:column;gap:10px;"></div>
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="saveAgentIds()">Save Agent IDs</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+<!-- WIZARD MODAL -->
+<div id="wizard-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:none;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;width:600px;max-width:95vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
+    <div style="padding:24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:18px;font-weight:700;">⚙ Pipeline Setup Wizard</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px;" id="wizard-subtitle">Configure each agent in your pipeline</div>
+      </div>
+      <button onclick="closeWizard()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <!-- Steps bar -->
+    <div style="padding:16px 24px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;" id="wizard-steps-bar"></div>
+    <!-- Content -->
+    <div style="padding:24px;flex:1;overflow-y:auto;" id="wizard-content"></div>
+    <!-- Footer -->
+    <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;">
+      <button class="btn btn-secondary" id="wizard-prev" onclick="wizardPrev()">← Back</button>
+      <button class="btn btn-primary" id="wizard-next" onclick="wizardNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- OUTPUT DRAWER -->
+<div id="output-drawer" style="display:none;position:fixed;right:0;top:60px;bottom:0;width:420px;background:var(--surface);border-left:1px solid var(--border);z-index:150;overflow-y:auto;padding:20px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+    <div style="font-size:16px;font-weight:700;" id="drawer-title">Output</div>
+    <button onclick="closeDrawer()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+  </div>
+  <div id="drawer-content" style="font-size:12px;font-family:monospace;color:var(--text2);white-space:pre-wrap;line-height:1.6;"></div>
+</div>
+
+<script>
+// ============================================================
+// GENESIS PROTOCOL COMMAND CENTER — Core JS
+// ============================================================
+
+const AGENTS = [
+  { id: 'boss',       name: 'Boss Agent',       icon: '👑', libraryId: 'd5f31b2a-d683-4748-a0e3-acbb9ffde653', graphId: '63421075-a04d-458d-a845-082a44a8d522', desc: 'Orchestrates the full pipeline' },
+  { id: 'architect',  name: 'Code Architect',   icon: '🏗️', libraryId: 'ecbd1bbb-7992-452d-8901-aeaa7205fa55', graphId: '9d4cedb8-d047-4921-ac79-cf636e761b99', desc: 'Designs code structure & architecture' },
+  { id: 'writer',     name: 'Code Writer',      icon: '✍️', libraryId: 'a2627a06-0d4a-4d9b-bf61-ab428f05c04f', graphId: '825855d2-1af3-4915-b26d-71bd65ac7c45', desc: 'Writes production-ready code' },
+  { id: 'builder',    name: 'Builder Agent',    icon: '🔨', libraryId: '96c9f3ce-b970-4c50-bf2e-37d089d13422', graphId: 'af73c435-ab1d-4fed-beca-e8e5b9b5b95e', desc: 'Builds & packages the application' },
+  { id: 'deployer',   name: 'Deployment Agent', icon: '🚀', libraryId: '56b3ad38-fa86-4757-978d-0671d984e513', graphId: 'da52be89-4c37-4c38-82ce-bc5018771846', desc: 'Deploys to production environment' },
+  { id: 'maintainer', name: 'Maintainer Agent', icon: '🔧', libraryId: 'd4488f6d-b2ec-43c3-b16f-2aaeecc577d6', graphId: 'c1fdd73c-644f-4234-94fd-f96f0a74ef6f', desc: 'Health checks & auto-fix loops' },
+  { id: 'monitor',    name: 'Health Monitor',   icon: '📡', libraryId: '613bad37',                             graphId: '',                                       desc: 'Monitors deployed site health' },
+];
+
+// STATE
+let state = {
+  apiKey: '',
+  apiConnected: false,
+  activePipeline: null,
+  savedPipelines: [],
+  pipelineStatus: 'idle', // idle, running, paused, stopped
+  agentStates: {},
+  runCost: 0,
+  budgetCap: 5.00,
+  costPerRun: 0.15,
+  totalRuns: 0,
+  totalCost: 0,
+  history: [],
+  agentInputs: {}, // wizard-configured inputs per agent
+  wizardStep: 0,
+  wizardAgents: [],
+};
+
+// ---- INIT ----
+function init() {
+  const saved = localStorage.getItem('genesisState');
+  if (saved) {
+    try {
+      const s = JSON.parse(saved);
+      state = { ...state, ...s };
+    } catch(e) {}
+  }
+  AGENTS.forEach(a => {
+    if (!state.agentStates[a.id]) state.agentStates[a.id] = { status: 'idle', lastRun: null, duration: null, cost: 0, output: '' };
+  });
+  renderAll();
+  if (state.apiKey) testConnection(true);
+}
+
+function saveState() {
+  localStorage.setItem('genesisState', JSON.stringify(state));
+}
+
+function renderAll() {
+  renderStats();
+  renderPipelineViz();
+  renderAgentTable();
+  renderAgentSelector();
+  renderSavedPipelines();
+  renderHistory();
+  renderAgentIdsEditor();
+  renderApiKeyInput();
+  renderBudgetInputs();
+  updateControls();
+}
+
+// ---- TABS ----
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const tabs = ['dashboard','pipeline','history','settings'];
+  document.querySelectorAll('.tab')[tabs.indexOf(tab)].classList.add('active');
+  document.getElementById('view-'+tab).classList.add('active');
+}
+
+// ---- STATS ----
+function renderStats() {
+  document.getElementById('stat-agents').textContent = (state.activePipeline ? state.activePipeline.agents.length : AGENTS.length);
+  document.getElementById('stat-runs').textContent = state.totalRuns;
+  document.getElementById('stat-cost').textContent = '€' + state.totalCost.toFixed(2);
+  const statusMap = { idle:'Idle', running:'Running', paused:'Paused', stopped:'Stopped' };
+  document.getElementById('stat-status').textContent = statusMap[state.pipelineStatus] || 'Idle';
+}
+
+// ---- PIPELINE VIZ ----
+function renderPipelineViz() {
+  const container = document.getElementById('pipelineNodes');
+  const pipeline = state.activePipeline;
+  if (!pipeline || !pipeline.agents.length) {
+    container.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:20px;">Select a pipeline in the Pipeline Builder tab to visualize it here.</div>';
+    document.getElementById('active-pipeline-name').textContent = 'No pipeline selected';
+    return;
+  }
+  document.getElementById('active-pipeline-name').textContent = pipeline.name;
+  let html = '';
+  pipeline.agents.forEach((agentId, idx) => {
+    const agent = AGENTS.find(a => a.id === agentId);
+    if (!agent) return;
+    const as = state.agentStates[agentId] || {};
+    let nodeClass = 'inactive';
+    if (state.pipelineStatus === 'idle') nodeClass = '';
+    if (as.status === 'running') nodeClass = 'running';
+    else if (as.status === 'done') nodeClass = 'done';
+    else if (as.status === 'error') nodeClass = 'error';
+    else if (as.status === 'paused') nodeClass = 'paused';
+
+    const connActive = as.status === 'done';
+    const connFlowing = state.agentStates[pipeline.agents[idx-1]] && state.agentStates[pipeline.agents[idx-1]].status === 'done' && as.status === 'running';
+
+    if (idx > 0) {
+      html += `<div class="node-connector">
+        <div class="connector-line ${connActive?'active':''} ${connFlowing?'flowing':''}"></div>
+        <span class="connector-arrow ${connActive?'active':''}">▶</span>
+      </div>`;
+    }
+    html += `<div class="pipeline-node">
+      <div class="node-box ${nodeClass}" onclick="showOutput('${agentId}')">
+        <div class="node-icon">${agent.icon}</div>
+        <div class="node-name">${agent.name}</div>
+        <div class="node-status">${as.status || 'idle'}</div>
+        <div class="node-cost">${as.cost ? '€'+as.cost.toFixed(3) : ''}</div>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ---- AGENT TABLE ----
+function renderAgentTable() {
+  const tbody = document.getElementById('agentTableBody');
+  const agentsToShow = state.activePipeline ? AGENTS.filter(a => state.activePipeline.agents.includes(a.id)) : AGENTS;
+  tbody.innerHTML = agentsToShow.map(agent => {
+    const as = state.agentStates[agent.id] || {};
+    const badgeMap = { idle:'badge-idle', running:'badge-running', done:'badge-done', error:'badge-error', paused:'badge-paused' };
+    const badge = badgeMap[as.status] || 'badge-idle';
+    const dotMap = { idle:'⚪', running:'🔵', done:'🟢', error:'🔴', paused:'🟡' };
+    return `<tr>
+      <td><span class="agent-icon">${agent.icon}</span> <strong>${agent.name}</strong><br><span style="font-size:11px;color:var(--text2);">${agent.desc}</span></td>
+      <td><span class="badge ${badge}">${dotMap[as.status]||'⚪'} ${as.status||'idle'}</span></td>
+      <td style="color:var(--text2);font-size:12px;">${as.lastRun ? new Date(as.lastRun).toLocaleString() : '—'}</td>
+      <td style="color:var(--text2);font-size:12px;">${as.duration ? as.duration+'s' : '—'}</td>
+      <td style="color:var(--accent2);">${as.cost ? '€'+as.cost.toFixed(3) : '—'}</td>
+      <td>${as.output ? `<button class="btn btn-secondary" style="font-size:11px;padding:4px 10px;" onclick="showOutput('${agent.id}')">View</button>` : '<span style="color:var(--text2);font-size:12px;">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- AGENT SELECTOR (Pipeline Builder) ----
+function renderAgentSelector() {
+  const container = document.getElementById('agent-selector');
+  container.innerHTML = AGENTS.map((agent, idx) => {
+    const selected = state.activePipeline && state.activePipeline.agents.includes(agent.id);
+    const order = selected ? state.activePipeline.agents.indexOf(agent.id) + 1 : null;
+    return `<div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid ${selected?'var(--accent)':'var(--border)'};border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 0.2s;" onclick="toggleAgent('${agent.id}')">
+      <input type="checkbox" ${selected?'checked':''} style="accent-color:var(--accent);width:16px;height:16px;" onchange="toggleAgent('${agent.id}')" onclick="event.stopPropagation()">
+      <span style="font-size:20px;">${agent.icon}</span>
+      <div style="flex:1;">
+        <div style="font-weight:600;">${agent.name}</div>
+        <div style="font-size:12px;color:var(--text2);">${agent.desc}</div>
+      </div>
+      ${selected ? `<div style="background:var(--accent);color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">${order}</div>` : ''}
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <button class="btn btn-secondary" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();moveAgent('${agent.id}',-1)">▲</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();moveAgent('${agent.id}',1)">▼</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAgent(agentId) {
+  if (!state.activePipeline) state.activePipeline = { name: 'New Pipeline', agents: [] };
+  const idx = state.activePipeline.agents.indexOf(agentId);
+  if (idx >= 0) state.activePipeline.agents.splice(idx, 1);
+  else state.activePipeline.agents.push(agentId);
+  saveState(); renderAll();
+}
+
+function moveAgent(agentId, dir) {
+  if (!state.activePipeline) return;
+  const agents = state.activePipeline.agents;
+  const idx = agents.indexOf(agentId);
+  if (idx < 0) return;
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= agents.length) return;
+  [agents[idx], agents[newIdx]] = [agents[newIdx], agents[idx]];
+  saveState(); renderAll();
+}
+
+// ---- SAVED PIPELINES ----
+function savePipeline() {
+  const name = document.getElementById('pipeline-name-input').value.trim() || 'Pipeline ' + (state.savedPipelines.length + 1);
+  if (!state.activePipeline || !state.activePipeline.agents.length) { alert('Select at least one agent first.'); return; }
+  const pipeline = { ...state.activePipeline, name, id: Date.now() };
+  state.savedPipelines.push(pipeline);
+  state.activePipeline = pipeline;
+  saveState(); renderAll();
+}
+
+function loadPipeline(id) {
+  const p = state.savedPipelines.find(p => p.id === id);
+  if (p) { state.activePipeline = { ...p }; saveState(); renderAll(); }
+}
+
+function deletePipeline(id) {
+  state.savedPipelines = state.savedPipelines.filter(p => p.id !== id);
+  if (state.activePipeline && state.activePipeline.id === id) state.activePipeline = null;
+  saveState(); renderAll();
+}
+
+function renderSavedPipelines() {
+  const container = document.getElementById('saved-pipelines');
+  if (!state.savedPipelines.length) {
+    container.innerHTML = '<div style="color:var(--text2);font-size:13px;">No saved pipelines yet.</div>';
+    return;
+  }
+  container.innerHTML = state.savedPipelines.map(p => `
+    <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid ${state.activePipeline&&state.activePipeline.id===p.id?'var(--accent)':'var(--border)'};border-radius:8px;padding:8px 14px;cursor:pointer;" onclick="loadPipeline(${p.id})">
+      <span style="font-weight:600;font-size:13px;">${p.name}</span>
+      <span style="font-size:11px;color:var(--text2);">${p.agents.length} agents</span>
+      <button onclick="event.stopPropagation();deletePipeline(${p.id})" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:14px;margin-left:4px;">✕</button>
+    </div>`).join('');
+}
+
+// ---- PIPELINE CONTROLS ----
+let runInterval = null;
+let currentAgentIdx = 0;
+let runStartTime = null;
+
+function startPipeline() {
+  if (!state.activePipeline || !state.activePipeline.agents.length) { alert('Please select a pipeline first.'); switchTab('pipeline'); return; }
+  if (!state.apiKey) { alert('Please set your API key in Settings first.'); switchTab('settings'); return; }
+  state.pipelineStatus = 'running';
+  state.runCost = 0;
+  currentAgentIdx = 0;
+  runStartTime = Date.now();
+  AGENTS.forEach(a => { state.agentStates[a.id] = { ...state.agentStates[a.id], status: 'idle', cost: 0, output: '' }; });
+  const runRecord = { id: Date.now(), pipeline: state.activePipeline.name, startTime: new Date().toISOString(), agents: [...state.activePipeline.agents], status: 'running', cost: 0, agentResults: {} };
+  state.currentRun = runRecord;
+  updateControls();
+  runNextAgent(runRecord);
+  saveState(); renderAll();
+}
+
+function runNextAgent(runRecord) {
+  const pipeline = state.activePipeline;
+  if (!pipeline || currentAgentIdx >= pipeline.agents.length) {
+    completePipeline(runRecord, 'done');
+    return;
+  }
+  const agentId = pipeline.agents[currentAgentIdx];
+  state.agentStates[agentId] = { status: 'running', lastRun: new Date().toISOString(), duration: null, cost: 0, output: '' };
+  renderAll();
+
+  // Simulate API call (replace with real API call when key is set)
+  const agentStartTime = Date.now();
+  const duration = 3000 + Math.random() * 4000;
+  setTimeout(() => {
+    if (state.pipelineStatus !== 'running') return;
+    const cost = state.costPerRun * (0.8 + Math.random() * 0.4);
+    state.agentStates[agentId] = {
+      status: 'done',
+      lastRun: new Date().toISOString(),
+      duration: ((Date.now() - agentStartTime) / 1000).toFixed(1),
+      cost: cost,
+      output: `Agent completed successfully.\nTimestamp: ${new Date().toISOString()}\nSimulated run — connect API key for live data.`
+    };
+    state.runCost += cost;
+    state.totalCost += cost;
+    document.getElementById('run-cost').textContent = '€' + state.runCost.toFixed(3);
+    const budgetFill = Math.min(100, (state.runCost / state.budgetCap) * 100);
+    document.getElementById('budget-fill').style.width = budgetFill + '%';
+    if (state.runCost >= state.budgetCap) {
+      pausePipeline();
+      alert('⚠️ Budget cap reached (€' + state.budgetCap.toFixed(2) + '). Pipeline paused. Increase budget cap in Settings to continue.');
+      return;
+    }
+    if (runRecord) runRecord.agentResults[agentId] = state.agentStates[agentId];
+    currentAgentIdx++;
+    const elapsed = (Date.now() - runStartTime) / 1000;
+    const perAgent = elapsed / currentAgentIdx;
+    const remaining = (pipeline.agents.length - currentAgentIdx) * perAgent;
+    const mm = Math.floor(remaining / 60).toString().padStart(2,'0');
+    const ss = Math.floor(remaining % 60).toString().padStart(2,'0');
+    document.getElementById('eta-display').textContent = `${mm}:${ss}`;
+    renderAll();
+    runNextAgent(runRecord);
+  }, duration);
+}
+
+function completePipeline(runRecord, status) {
+  state.pipelineStatus = 'idle';
+  state.totalRuns++;
+  if (runRecord) {
+    runRecord.status = status;
+    runRecord.endTime = new Date().toISOString();
+    runRecord.cost = state.runCost;
+    state.history.unshift(runRecord);
+    if (state.history.length > 50) state.history = state.history.slice(0, 50);
+  }
+  document.getElementById('eta-display').textContent = '--:--';
+  updateControls();
+  saveState(); renderAll();
+}
+
+function pausePipeline() {
+  if (state.pipelineStatus === 'running') { state.pipelineStatus = 'paused'; updateControls(); renderAll(); }
+  else if (state.pipelineStatus === 'paused') { state.pipelineStatus = 'running'; runNextAgent(state.currentRun); updateControls(); renderAll(); }
+}
+
+function stopPipeline() {
+  state.pipelineStatus = 'stopped';
+  completePipeline(state.currentRun, 'stopped');
+}
+
+function retryFailed() {
+  const pipeline = state.activePipeline;
+  if (!pipeline) return;
+  const failedIdx = pipeline.agents.findIndex(id => state.agentStates[id] && state.agentStates[id].status === 'error');
+  if (failedIdx >= 0) { currentAgentIdx = failedIdx; state.pipelineStatus = 'running'; updateControls(); runNextAgent(state.currentRun); renderAll(); }
+}
+
+function updateControls() {
+  const running = state.pipelineStatus === 'running';
+  const paused = state.pipelineStatus === 'paused';
+  const idle = state.pipelineStatus === 'idle' || state.pipelineStatus === 'stopped';
+  document.getElementById('btn-start').disabled = running || paused;
+  document.getElementById('btn-pause').disabled = idle;
+  document.getElementById('btn-pause').textContent = paused ? '▶ Resume' : '⏸ Pause';
+  document.getElementById('btn-stop').disabled = idle;
+  const hasFailed = state.activePipeline && state.activePipeline.agents.some(id => state.agentStates[id] && state.agentStates[id].status === 'error');
+  document.getElementById('btn-retry').style.display = hasFailed && idle ? 'inline-block' : 'none';
+}
+
+// ---- HISTORY ----
+function renderHistory() {
+  const container = document.getElementById('history-list');
+  if (!state.history.length) {
+    container.innerHTML = '<div style="color:var(--text2);font-size:13px;text-align:center;padding:40px;">No runs yet. Start a pipeline to see history here.</div>';
+    return;
+  }
+  container.innerHTML = state.history.map(run => {
+    const statusColor = run.status === 'done' ? 'var(--success)' : run.status === 'stopped' ? 'var(--warning)' : 'var(--error)';
+    const duration = run.endTime ? ((new Date(run.endTime) - new Date(run.startTime)) / 1000).toFixed(0) : '?';
+    return `<div style="border-bottom:1px solid var(--border);padding:16px 0;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;">
+        <div style="font-weight:600;">${run.pipeline}</div>
+        <div style="font-size:12px;color:var(--text2);">${new Date(run.startTime).toLocaleString()} · ${duration}s · ${run.agents.length} agents</div>
+      </div>
+      <div style="color:${statusColor};font-weight:600;font-size:13px;">${run.status.toUpperCase()}</div>
+      <div style="color:var(--accent2);font-weight:600;">€${run.cost ? run.cost.toFixed(3) : '0.000'}</div>
+    </div>`;
+  }).join('');
+}
+
+function clearHistory() {
+  if (confirm('Clear all run history?')) { state.history = []; state.totalRuns = 0; state.totalCost = 0; saveState(); renderAll(); }
+}
+
+// ---- SETTINGS ----
+function renderApiKeyInput() {
+  const el = document.getElementById('api-key-input');
+  if (el && state.apiKey) el.value = state.apiKey;
+}
+
+function renderBudgetInputs() {
+  const bc = document.getElementById('budget-cap-input');
+  const ce = document.getElementById('cost-estimate-input');
+  if (bc) bc.value = state.budgetCap;
+  if (ce) ce.value = state.costPerRun;
+}
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key) { alert('Please enter an API key.'); return; }
+  state.apiKey = key;
+  saveState();
+  testConnection();
+}
+
+async function testConnection(silent = false) {
+  if (!state.apiKey) { if (!silent) alert('Enter API key first.'); return; }
+  document.getElementById('connection-result').textContent = 'Testing...';
+  try {
+    const res = await fetch('https://backend.agpt.co/external-api/v1/agents', {
+      headers: { 'Authorization': 'Bearer ' + state.apiKey, 'Content-Type': 'application/json' }
+    });
+    if (res.ok || res.status === 200) {
+      state.apiConnected = true;
+      document.getElementById('apiDot').classList.add('connected');
+      document.getElementById('apiStatusText').textContent = 'API Connected';
+      document.getElementById('connection-result').textContent = '✅ Connected';
+      document.getElementById('connection-result').style.color = 'var(--success)';
+    } else {
+      throw new Error('Status ' + res.status);
+    }
+  } catch(e) {
+    state.apiConnected = false;
+    document.getElementById('apiDot').classList.remove('connected');
+    document.getElementById('apiStatusText').textContent = 'Not connected';
+    document.getElementById('connection-result').textContent = '❌ Failed: ' + e.message;
+    document.getElementById('connection-result').style.color = 'var(--error)';
+  }
+}
+
+function saveBudgetSettings() {
+  state.budgetCap = parseFloat(document.getElementById('budget-cap-input').value) || 5;
+  state.costPerRun = parseFloat(document.getElementById('cost-estimate-input').value) || 0.15;
+  document.getElementById('budget-cap-label').textContent = '€' + state.budgetCap.toFixed(2);
+  saveState();
+  alert('Budget settings saved.');
+}
+
+function renderAgentIdsEditor() {
+  const container = document.getElementById('agent-ids-editor');
+  if (!container) return;
+  container.innerHTML = AGENTS.map(agent => `
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:18px;width:24px;">${agent.icon}</span>
+      <span style="font-size:13px;font-weight:600;width:160px;">${agent.name}</span>
+      <input type="text" id="lib-id-${agent.id}" value="${agent.libraryId}" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;font-family:monospace;outline:none;">
+    </div>`).join('');
+}
+
+function saveAgentIds() {
+  AGENTS.forEach(agent => {
+    const el = document.getElementById('lib-id-' + agent.id);
+    if (el) agent.libraryId = el.value.trim();
+  });
+  saveState();
+  alert('Agent IDs saved.');
+}
+
+// ---- WIZARD ----
+function openWizard() {
+  if (!state.activePipeline || !state.activePipeline.agents.length) { alert('Select agents in the pipeline first.'); return; }
+  state.wizardStep = 0;
+  state.wizardAgents = state.activePipeline.agents.map(id => AGENTS.find(a => a.id === id)).filter(Boolean);
+  document.getElementById('wizard-overlay').style.display = 'flex';
+  renderWizard();
+}
+
+function closeWizard() { document.getElementById('wizard-overlay').style.display = 'none'; }
+
+function renderWizard() {
+  const agents = state.wizardAgents;
+  const step = state.wizardStep;
+  const stepsBar = document.getElementById('wizard-steps-bar');
+  const totalSteps = agents.length + 1; // +1 for summary
+
+  stepsBar.innerHTML = Array.from({length: totalSteps}, (_, i) => {
+    const isAgent = i < agents.length;
+    const label = isAgent ? agents[i].icon : '✅';
+    const active = i === step;
+    const done = i < step;
+    return `<div style="display:flex;align-items:center;gap:4px;">
+      <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:${done?'var(--success)':active?'var(--accent)':'var(--surface3)'};color:${done||active?'white':'var(--text2)'};border:2px solid ${done?'var(--success)':active?'var(--accent)':'var(--border)'};">${done?'✓':label}</div>
+      ${i < totalSteps-1 ? '<div style="width:20px;height:2px;background:' + (done?'var(--success)':'var(--border)') + ';"></div>' : ''}
+    </div>`;
+  }).join('');
+
+  const content = document.getElementById('wizard-content');
+  const subtitle = document.getElementById('wizard-subtitle');
+
+  if (step < agents.length) {
+    const agent = agents[step];
+    subtitle.textContent = `Step ${step+1} of ${agents.length}: Configure ${agent.name}`;
+    const saved = state.agentInputs[agent.id] || {};
+    content.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <span style="font-size:32px;">${agent.icon}</span>
+        <div>
+          <div style="font-size:18px;font-weight:700;">${agent.name}</div>
+          <div style="font-size:13px;color:var(--text2);">${agent.desc}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">Task / Prompt for this agent</label>
+          <textarea id="wiz-task" rows="3" placeholder="Describe what this agent should do..." style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;resize:vertical;">${saved.task||''}</textarea>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">Additional Context / Instructions</label>
+          <textarea id="wiz-context" rows="2" placeholder="Any specific context or constraints..." style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;resize:vertical;">${saved.context||''}</textarea>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">Output destination (optional)</label>
+          <input type="text" id="wiz-output" placeholder="e.g. GitHub repo, file path, URL..." value="${saved.output||''}" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;">
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="wiz-skip" ${saved.skip?'checked':''} style="accent-color:var(--accent);">
+          <label for="wiz-skip" style="font-size:13px;color:var(--text2);">Skip this agent in the current run</label>
+        </div>
+      </div>`;
+  } else {
+    subtitle.textContent = 'Review & Confirm';
+    content.innerHTML = `
+      <div style="font-size:16px;font-weight:700;margin-bottom:16px;">Pipeline Summary</div>
+      ${agents.map((agent, i) => {
+        const inp = state.agentInputs[agent.id] || {};
+        return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span>${agent.icon}</span><strong>${agent.name}</strong>
+            ${inp.skip ? '<span style="background:var(--warning);color:#000;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">SKIP</span>' : '<span style="background:rgba(0,230,118,0.15);color:var(--success);font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">ACTIVE</span>'}
+          </div>
+          ${inp.task ? `<div style="font-size:12px;color:var(--text2);">📝 ${inp.task}</div>` : '<div style="font-size:12px;color:var(--text2);">No task set</div>'}
+        </div>`;
+      }).join('')}
+      <div style="background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.3);border-radius:10px;padding:14px;margin-top:16px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Estimated Cost</div>
+        <div style="font-size:24px;font-weight:700;color:var(--accent2);">€${(agents.filter(a => !(state.agentInputs[a.id]||{}).skip).length * state.costPerRun).toFixed(2)}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px;">Based on €${state.costPerRun} per agent · Budget cap: €${state.budgetCap.toFixed(2)}</div>
+      </div>`;
+  }
+
+  document.getElementById('wizard-prev').disabled = step === 0;
+  document.getElementById('wizard-next').textContent = step >= agents.length ? '🚀 Run Pipeline' : 'Next →';
+}
+
+function wizardSaveStep() {
+  const agents = state.wizardAgents;
+  const step = state.wizardStep;
+  if (step < agents.length) {
+    const agent = agents[step];
+    state.agentInputs[agent.id] = {
+      task: document.getElementById('wiz-task')?.value || '',
+      context: document.getElementById('wiz-context')?.value || '',
+      output: document.getElementById('wiz-output')?.value || '',
+      skip: document.getElementById('wiz-skip')?.checked || false,
+    };
+  }
+}
+
+function wizardNext() {
+  wizardSaveStep();
+  if (state.wizardStep >= state.wizardAgents.length) {
+    closeWizard();
+    saveState();
+    startPipeline();
+    return;
+  }
+  state.wizardStep++;
+  renderWizard();
+}
+
+function wizardPrev() {
+  wizardSaveStep();
+  if (state.wizardStep > 0) { state.wizardStep--; renderWizard(); }
+}
+
+// ---- OUTPUT DRAWER ----
+function showOutput(agentId) {
+  const agent = AGENTS.find(a => a.id === agentId);
+  const as = state.agentStates[agentId] || {};
+  document.getElementById('drawer-title').textContent = agent ? agent.icon + ' ' + agent.name + ' — Output' : 'Output';
+  document.getElementById('drawer-content').textContent = as.output || 'No output yet.';
+  document.getElementById('output-drawer').style.display = 'block';
+}
+
+function closeDrawer() { document.getElementById('output-drawer').style.display = 'none'; }
+
+function openSettings() { switchTab('settings'); }
+
+// ---- START ----
+init();
+</script>
+</body>
+</html>
