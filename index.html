@@ -201,6 +201,28 @@
   </div>
 </div>
 
+<!-- LINKED RUNS CARD (inside runs view) -->
+<script>
+// inject linked runs card after runsContainer on load
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    const rc = document.getElementById('runsContainer');
+    if (rc && !document.getElementById('linkedRunsContainer')) {
+      const card = document.createElement('div');
+      card.innerHTML = \`<div style="margin-top:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:16px;font-weight:700;">Linked Product Runs</div>
+          <button class="btn btn-sm btn-secondary" onclick="renderLinkedRuns()">↺ Refresh</button>
+        </div>
+        <div class="card" id="linkedRunsContainer" style="padding:12px 16px;"></div>
+      </div>\`;
+      rc.parentNode.appendChild(card);
+      if (typeof renderLinkedRuns === 'function') renderLinkedRuns();
+    }
+  });
+})();
+</script>
+
 <!-- WEBHOOKS VIEW -->
 <div class="view" id="view-webhooks">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
@@ -767,10 +789,33 @@ async function refreshAll() {
   await loadWebhooks();
 }
 
+// ---- LINKED RUNS (from external products via localStorage) ----
+function renderLinkedRuns() {
+  const container = document.getElementById('linkedRunsContainer');
+  if (!container) return;
+  const runs = JSON.parse(localStorage.getItem('gp_linked_runs') || '[]');
+  if (!runs.length) {
+    container.innerHTML = '<div style="color:var(--text2);padding:12px;">No linked runs yet. Generate a doc from Legal Doc Generator to see it here.</div>';
+    return;
+  }
+  container.innerHTML = runs.map(r => {
+    const ago = Math.round((Date.now() - r.ts) / 60000);
+    const agoStr = ago < 1 ? 'just now' : ago < 60 ? ago + 'm ago' : Math.round(ago/60) + 'h ago';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="flex:1;">
+        <div style="font-weight:600;color:var(--text1);">${r.label}</div>
+        <div style="font-size:12px;color:var(--text2);">Run ID: ${r.runId} &bull; ${agoStr}</div>
+      </div>
+      <button class="btn btn-sm" onclick="viewRunDetail('${r.agentId}','${r.runId}')">View</button>
+    </div>`;
+  }).join('');
+}
+
 // ---- INIT ----
 async function init() {
   loadState();
   document.getElementById('proxyUrlInput').value = state.proxyUrl;
+  renderLinkedRuns();
   renderAgentIdsEditor();
   renderDashAgentTableFallback();
   renderPipelineViz();
