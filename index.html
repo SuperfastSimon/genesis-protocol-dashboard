@@ -255,6 +255,24 @@
 
 </main>
 
+
+<!-- DETAIL MODAL -->
+<div class="run-modal" id="detailModal">
+  <div class="modal-box" style="width:720px;">
+    <div class="modal-header">
+      <div>
+        <div style="font-size:17px;font-weight:700;">Run Details</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:3px;" id="detailSubtitle">Full execution data</div>
+      </div>
+      <button onclick="document.getElementById('detailModal').classList.remove('open')" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;">✕</button>
+    </div>
+    <div class="modal-body" id="detailBody" style="overflow-y:auto;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="document.getElementById('detailModal').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- RUN MODAL -->
 <div class="run-modal" id="runModal">
   <div class="modal-box">
@@ -428,11 +446,60 @@ async function loadAllRuns() {
 
 async function viewRunDetail(agentId, runId) {
   if (!runId) return;
+  const modal = document.getElementById('detailModal');
+  const body  = document.getElementById('detailBody');
+  body.innerHTML = '<div style="color:var(--text2);padding:20px;text-align:center;">Loading run details...</div>';
+  modal.classList.add('open');
   try {
     const data = await proxyGet('/agents/' + agentId + '/runs/' + runId);
-    alert(JSON.stringify(data, null, 2));
+    // Build readable display
+    const status = (data.status || data.state || 'unknown').toLowerCase();
+    const created = data.created_at || data.started_at || data.startTime || '';
+    const finished = data.finished_at || data.completed_at || data.endTime || '';
+    const task = data.task || data.input?.task || data.input?.prompt || data.prompt || '';
+    const output = data.output || data.result || data.response || data.artifacts || '';
+    const steps = data.steps || data.execution_steps || [];
+    const statusColor = status.includes('complet') || status === 'done' ? 'var(--success)' : status === 'running' ? 'var(--accent2)' : status.includes('fail') || status.includes('error') ? 'var(--error)' : 'var(--text2)';
+    let html = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--surface2);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">STATUS</div>
+          <div style="font-weight:700;color:${statusColor};">${status.toUpperCase()}</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">STARTED</div>
+          <div style="font-size:12px;font-weight:600;">${created ? new Date(created).toLocaleString('nl-NL') : '—'}</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">FINISHED</div>
+          <div style="font-size:12px;font-weight:600;">${finished ? new Date(finished).toLocaleString('nl-NL') : '—'}</div>
+        </div>
+      </div>`;
+    if (task) html += `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📝 Task / Prompt</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:13px;line-height:1.6;white-space:pre-wrap;">${String(task).replace(/</g,'&lt;')}</div>
+      </div>`;
+    if (output) {
+      const outStr = typeof output === 'object' ? JSON.stringify(output, null, 2) : String(output);
+      html += `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">✅ Output / Result</div>
+        <div style="background:var(--surface2);border:1px solid rgba(0,230,118,0.3);border-radius:8px;padding:14px;font-family:monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;max-height:240px;overflow-y:auto;color:var(--success);">${outStr.replace(/</g,'&lt;')}</div>
+      </div>`; }
+    if (steps && steps.length > 0) html += `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">⚙️ Execution Steps (${steps.length})</div>
+        ${steps.map((s,i) => `<div style="background:var(--surface2);border-radius:6px;padding:10px;margin-bottom:6px;font-size:12px;"><span style="color:var(--accent2);font-weight:700;">Step ${i+1}</span> — ${JSON.stringify(s).replace(/</g,'&lt;').slice(0,200)}</div>`).join('')}
+      </div>`;
+    html += `
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🔍 Raw API Response</div>
+        <div style="background:var(--surface2);border-radius:8px;padding:14px;font-family:monospace;font-size:11px;white-space:pre-wrap;max-height:180px;overflow-y:auto;color:var(--text2);">${JSON.stringify(data,null,2).replace(/</g,'&lt;')}</div>
+      </div>`;
+    body.innerHTML = html;
   } catch(e) {
-    alert('Error loading run: ' + e.message);
+    body.innerHTML = `<div style="color:var(--error);padding:20px;">Error loading run details: ${e.message}</div>`;
   }
 }
 
